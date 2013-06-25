@@ -26,7 +26,6 @@ namespace TecPlusPlus
     /// </summary>
     public partial class MainWindow : Window
     {
-
         private Socket _sockClient;
         private IPAddress _ipAddress;
         private IPEndPoint _ipEndPoint;
@@ -46,8 +45,8 @@ namespace TecPlusPlus
         private String _appendData;
         private readonly Object _cmdHistLock = new Object();
 
-        private readonly StreamWriter _writer;
-
+        private readonly StreamWriter _gameLogWriter;
+        private readonly StreamWriter _errorLogWriter;
 
         public MainWindow()
         {
@@ -61,14 +60,8 @@ namespace TecPlusPlus
 
             txtInput.Focus();
 
-            _writer = new StreamWriter(new FileStream("datalog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));
-
-            /*
-            this.LayoutGrid.ColumnDefinitions[0].Width = new GridLength(100);
-            this.LayoutGrid.ColumnDefinitions[2].Width = new GridLength(100);
-            this.Width = this.Width + 200;
-             */
-            
+            _gameLogWriter = new StreamWriter(new FileStream("datalog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));
+            _errorLogWriter = new StreamWriter(new FileStream("errorlog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));    
         }
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -117,7 +110,7 @@ namespace TecPlusPlus
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                _errorLogWriter.WriteLine(string.Format("Error occured in OpenConnection: {0}", ex.Message));
             }
         }
 
@@ -145,7 +138,7 @@ namespace TecPlusPlus
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                _errorLogWriter.WriteLine(string.Format("Error occured in WaitForData: {0}", ex.Message));
             }
         }
 
@@ -164,13 +157,13 @@ namespace TecPlusPlus
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                _errorLogWriter.WriteLine(string.Format("Error occured in OnDataReceived: {0}", ex.Message)); 
             }
         }
 
         public void ProcessReceivedData(string data)
         {
-            _writer.Write(data);
+            _gameLogWriter.Write(data);
             _lastDataReceived = data;
            Regex regx = new Regex("[A-Za-z0-9 ,\'\"><\\[\\]\\=\\-\\u001B]");
            if (!regx.IsMatch(data))
@@ -296,7 +289,7 @@ namespace TecPlusPlus
             }
             catch (SocketException ex)
             {
-                throw new Exception(ex.Message);
+                _errorLogWriter.WriteLine(string.Format("SocketException error occured in ProcessSendData: {0}", ex.Message));
             }
         }
 
