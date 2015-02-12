@@ -3,13 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TEC++  [ Disconnected ]" 
         Background="gray"
-        Height="900" 
+        Height="750" 
         Width="750"
         MinWidth="610"
         WindowStartupLocation="CenterScreen" 
         Name="TecClient" 
         MouseLeftButtonDown="OnMouseLeftButtonDown" 
         Opacity="0.99" ResizeMode="CanResizeWithGrip" MouseRightButtonDown="OnMouseRightButtonDown">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo/>
+    </Window.TaskbarItemInfo>
 
     <Window.ContextMenu>
         <ContextMenu>

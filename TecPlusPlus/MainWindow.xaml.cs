@@ -86,7 +86,8 @@ namespace TecPlusPlus
             try
             {
                 _sockClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _ipAddress = IPAddress.Parse("66.211.98.66"); // tec.skotos.net
+                //_ipAddress = IPAddress.Parse("66.211.98.66"); // tec.skotos.net
+                _ipAddress = IPAddress.Parse("173.255.223.237"); // tec.skotos.net
                 if (_ipAddress != null) _ipEndPoint = new IPEndPoint(_ipAddress, 6730);
 
                 _sockClient.Connect(_ipEndPoint);
@@ -120,6 +121,9 @@ namespace TecPlusPlus
             {
                 _sockClient.Close();
                 _sockClient = null;
+
+                txtOutput.AppendText("\r\nConnection closed at: " + Convert.ToString(DateTime.Now) + "...\r\n");
+                this.Title = "TEC++ [ Disconnected ]";
             }
         }
 
@@ -318,12 +322,12 @@ namespace TecPlusPlus
 
         private void MnuConnectClick(object sender, RoutedEventArgs e)
         {
-
+            OpenConnection();
         }
 
         private void MnuDisconnectClick(object sender, RoutedEventArgs e)
         {
-
+            CloseSocket();
         }
 
         private void MnuExitClick(object sender, RoutedEventArgs e)
