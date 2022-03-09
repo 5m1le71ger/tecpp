@@ -4,20 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using Newtonsoft.Json;
+using Microsoft.Win32;
 
 namespace TecPlusPlus
 {
@@ -47,7 +42,9 @@ namespace TecPlusPlus
 
         private readonly StreamWriter _gameLogWriter;
         private readonly StreamWriter _errorLogWriter;
+        private MudCfg mudCfg;
 
+        [Obsolete]
         public MainWindow()
         {
             InitializeComponent();
@@ -61,15 +58,34 @@ namespace TecPlusPlus
             txtInput.Focus();
 
             _gameLogWriter = new StreamWriter(new FileStream("datalog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));
-            _errorLogWriter = new StreamWriter(new FileStream("errorlog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));    
+            _errorLogWriter = new StreamWriter(new FileStream("errorlog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));
+
         }
 
+        [Obsolete]
+        private bool LoadMudCfg(string filename)
+        {
+            try
+            {
+                string text = System.IO.File.ReadAllText(filename);
+                mudCfg = JsonConvert.DeserializeObject<MudCfg>(text);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var s = string.Format("Error occured in LoadMudCfg: {0}", ex.Message);
+                txtOutput.AppendText(s);
+                _errorLogWriter.WriteLine(s);
+                return false;
+            }
+        }
+
+        [Obsolete]
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             if (_isSocketConnected == false)
             {
                 _hexToSend = StringToByteArray("0d0a");
-                OpenConnection();
             }
         }
 
@@ -81,15 +97,19 @@ namespace TecPlusPlus
             }
         }
 
-        public void OpenConnection()
+        [Obsolete]
+        public void OpenConnection(MudCfg cfg)
         {
             try
             {
                 _sockClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 //_ipAddress = IPAddress.Parse("66.211.98.66"); // tec.skotos.net
-                _ipAddress = IPAddress.Parse("173.255.223.237"); // tec.skotos.net
-                if (_ipAddress != null) _ipEndPoint = new IPEndPoint(_ipAddress, 6730);
-
+                //_ipAddress = IPAddress.Parse("173.255.223.237"); // tec.skotos.net
+                //IPHostEntry ipHostInfo = Dns.GetHostEntry("www.eternalcitygame.com");
+                //IPHostEntry ipHostInfo = Dns.GetHostEntry("wulin.17mud.com");
+                IPHostEntry ipHostInfo = Dns.GetHostEntry(cfg.Address);
+                _ipAddress = ipHostInfo.AddressList[0];
+                if (_ipAddress != null) _ipEndPoint = new IPEndPoint(_ipAddress, cfg.Port);
                 _sockClient.Connect(_ipEndPoint);
 
                 if (_sockClient.Connected)
@@ -111,7 +131,9 @@ namespace TecPlusPlus
             }
             catch (Exception ex)
             {
-                _errorLogWriter.WriteLine(string.Format("Error occured in OpenConnection: {0}", ex.Message));
+                var s = string.Format("Error occured in OpenConnection: {0}", ex.Message);
+                txtOutput.AppendText(s);
+                _errorLogWriter.WriteLine(s);
             }
         }
 
@@ -154,7 +176,9 @@ namespace TecPlusPlus
                 int iRx = 0;
                 iRx = _sockClient.EndReceive(ar);
                 byte[] buffer = (byte[])ar.AsyncState;
-                string data = System.Text.Encoding.UTF8.GetString(buffer,0,iRx);
+                //string data = System.Text.Encoding.UTF8.GetString(buffer,0,iRx);
+                //string data = System.Text.Encoding.GetEncoding("gb2312").GetString(buffer, 0, iRx);
+                string data = System.Text.Encoding.GetEncoding(mudCfg.Encode).GetString(buffer, 0, iRx);
                 ProcessReceivedData(data);
                                 
                 WaitForData();
@@ -320,9 +344,20 @@ namespace TecPlusPlus
 
         }
 
+        [Obsolete]
         private void MnuConnectClick(object sender, RoutedEventArgs e)
         {
-            OpenConnection();
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "Mud配置|*.mudcfg|所有文件|*.*";
+            if(dialog.ShowDialog() == true)
+            {
+                if (LoadMudCfg(dialog.FileName))
+                {
+                    CloseSocket();
+                    OpenConnection(mudCfg);
+                }
+            }
+
         }
 
         private void MnuDisconnectClick(object sender, RoutedEventArgs e)
