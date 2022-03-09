@@ -60,6 +60,7 @@ namespace TecPlusPlus
             _gameLogWriter = new StreamWriter(new FileStream("datalog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));
             _errorLogWriter = new StreamWriter(new FileStream("errorlog.txt", FileMode.Create, FileAccess.Write, FileShare.Read));
 
+            txtOutput.Background = new SolidColorBrush(Colors.Black);
         }
 
         [Obsolete]
@@ -160,7 +161,10 @@ namespace TecPlusPlus
 
                 byte[] buffer = new byte[1024];
                 // Start listening for data...
-                _asyncResult = _sockClient.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, _asyncCallback, buffer);
+                if(_sockClient != null)
+                {
+                    _asyncResult = _sockClient.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, _asyncCallback, buffer);
+                }
             }
             catch (Exception ex)
             {
@@ -174,7 +178,10 @@ namespace TecPlusPlus
             {
                 //end receive...
                 int iRx = 0;
-                iRx = _sockClient.EndReceive(ar);
+                if(_sockClient != null)
+                {
+                    iRx = _sockClient.EndReceive(ar);
+                }
                 byte[] buffer = (byte[])ar.AsyncState;
                 //string data = System.Text.Encoding.UTF8.GetString(buffer,0,iRx);
                 //string data = System.Text.Encoding.GetEncoding("gb2312").GetString(buffer, 0, iRx);
@@ -229,7 +236,7 @@ namespace TecPlusPlus
             {
                 string[] param = data.Split(new char[] {(char)27});
 
-                Color textColor = Colors.Black;
+                Color textColor = Colors.White;
                 Paragraph textParagraph = new Paragraph();
                 textParagraph.Margin = new Thickness(0);
 
@@ -242,10 +249,23 @@ namespace TecPlusPlus
                     }
                     else
                     {
-                        Run textRun = new Run(p);
+                        AnsiColor ansiColor = new AnsiColor();
+                        int pos = AnsiColor.Parse(p, ref ansiColor);
+                        if(pos > 0)
+                        {
+                            if(ansiColor.Ground == AnsiColor.EnumGround.Forground)
+                            {
+                                textColor = ansiColor.ColorValue;
+                            }
+                        }
+                        Run textRun = new Run(p);//.Substring(pos));
                         textRun.Foreground = new SolidColorBrush(textColor);
+                        if(pos > 0 && ansiColor.Ground == AnsiColor.EnumGround.Background)
+                        {
+                            //textRun.Background = new SolidColorBrush(textColor);
+                            int debug = 1;
+                        }
                         textParagraph.Inlines.Add(textRun);
-                       
                     }
                 }
                 txtOutput.Document.Blocks.Add(textParagraph);
