@@ -66,6 +66,8 @@
         
         <Menu Name="TopMenu" Grid.Column="1" Grid.Row="0" BorderThickness="0,0,0,1" Margin="5,0,5,0" BorderBrush="Black">
             <MenuItem Header="_File" Name="mnuFile" Click="MnuFileClick">
+                <MenuItem Header="_NewCfg" Name="mnuNewCfg" Click="MnuNewCfgClick" />
+                <MenuItem Header="_EditCfg" Name="mnuEditCfg" Click="MnuEditCfgClick" />
                 <MenuItem Header="_Connect" Name="mnuConnect" Click="MnuConnectClick" />
                 <MenuItem Header="_Disconnect" Name="mnuDisconnect" Click="MnuDisconnectClick" />
                 <Separator />

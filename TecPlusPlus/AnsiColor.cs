@@ -8,12 +8,12 @@ namespace TecPlusPlus
 {
     class AnsiColor
     {
-        AnsiColor()
+        public AnsiColor()
         {
             Ground = EnumGround.Forground;
             ColorValue = Colors.Black;
         }
-        AnsiColor(EnumGround g,Color c)
+        public AnsiColor(EnumGround g,Color c)
         {
             Ground = g;
             ColorValue = c;
@@ -58,22 +58,25 @@ namespace TecPlusPlus
             { "[45m", new AnsiColor(EnumGround.Background, Colors.DarkMagenta) },
             { "[46m", new AnsiColor(EnumGround.Background, Colors.DarkCyan) },
             { "[47m", new AnsiColor(EnumGround.Background, Colors.GhostWhite) },
-            { "[2;37;0m", new AnsiColor(EnumGround.Background, Colors.Black) },
-            
+            { "[2;37;0m", new AnsiColor(EnumGround.Forground, Colors.White) },
+            { "[256D", new AnsiColor(EnumGround.Forground, Colors.White) },
+            { "[K", new AnsiColor(EnumGround.Forground, Colors.White) },
+
         };
 
-        public static AnsiColor Parse(string text)
+        public static int Parse(string text, ref AnsiColor c)
         {
-            AnsiColor result = new AnsiColor();
+            int rtn = 0;
             foreach (KeyValuePair<string, AnsiColor> kv in table)
             {
-                if (kv.Key.Equals(text))
+                if(0 == text.IndexOf(kv.Key))
                 {
-                    result = kv.Value;
+                    c = kv.Value;
+                    rtn = kv.Key.Length;
                     break;
                 }
             }
-            return result;
+            return rtn;
         }
 
     }
