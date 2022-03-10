@@ -44,7 +44,7 @@ namespace TecPlusPlus
         private readonly StreamWriter _errorLogWriter;
         private MudCfg mudCfg;
 
-        [Obsolete]
+//        [Obsolete]
         public MainWindow()
         {
             InitializeComponent();
@@ -63,13 +63,13 @@ namespace TecPlusPlus
             txtOutput.Background = new SolidColorBrush(Colors.Black);
         }
 
-        [Obsolete]
-        private bool LoadMudCfg(string filename)
+//        [Obsolete]
+        private bool LoadMudCfg(string filename,ref MudCfg cfg)
         {
             try
             {
                 string text = System.IO.File.ReadAllText(filename);
-                mudCfg = JsonConvert.DeserializeObject<MudCfg>(text);
+                cfg = JsonConvert.DeserializeObject<MudCfg>(text);
                 return true;
             }
             catch (Exception ex)
@@ -81,7 +81,7 @@ namespace TecPlusPlus
             }
         }
 
-        [Obsolete]
+//        [Obsolete]
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             if (_isSocketConnected == false)
@@ -98,16 +98,12 @@ namespace TecPlusPlus
             }
         }
 
-        [Obsolete]
+//        [Obsolete]
         public void OpenConnection(MudCfg cfg)
         {
             try
             {
                 _sockClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                //_ipAddress = IPAddress.Parse("66.211.98.66"); // tec.skotos.net
-                //_ipAddress = IPAddress.Parse("173.255.223.237"); // tec.skotos.net
-                //IPHostEntry ipHostInfo = Dns.GetHostEntry("www.eternalcitygame.com");
-                //IPHostEntry ipHostInfo = Dns.GetHostEntry("wulin.17mud.com");
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(cfg.Address);
                 _ipAddress = ipHostInfo.AddressList[0];
                 if (_ipAddress != null) _ipEndPoint = new IPEndPoint(_ipAddress, cfg.Port);
@@ -258,12 +254,11 @@ namespace TecPlusPlus
                                 textColor = ansiColor.ColorValue;
                             }
                         }
-                        Run textRun = new Run(p);//.Substring(pos));
+                        Run textRun = new Run(p.Substring(pos));
                         textRun.Foreground = new SolidColorBrush(textColor);
                         if(pos > 0 && ansiColor.Ground == AnsiColor.EnumGround.Background)
                         {
-                            //textRun.Background = new SolidColorBrush(textColor);
-                            int debug = 1;
+                            textRun.Background = new SolidColorBrush(ansiColor.ColorValue);
                         }
                         textParagraph.Inlines.Add(textRun);
                     }
@@ -330,8 +325,9 @@ namespace TecPlusPlus
         {
             try
             {
-                byte[] byteData = System.Text.Encoding.ASCII.GetBytes(input);
-                
+                //byte[] byteData = System.Text.Encoding.ASCII.GetBytes(input);
+                byte[] byteData = System.Text.Encoding.GetEncoding(mudCfg.Encode).GetBytes(input);
+
                 _sockClient.Send(ConcatenateByteArrays(byteData, _hexToSend));
 
             }
@@ -364,14 +360,46 @@ namespace TecPlusPlus
 
         }
 
-        [Obsolete]
+        private void MnuNewCfgClick(object sender, RoutedEventArgs e)
+        {
+            MudCfgBaseEditDlg dlg = new MudCfgBaseEditDlg(new MudCfg(), "");
+            if (dlg.ShowDialog() == true)
+            {
+                SaveFileDialog dialog = new SaveFileDialog();
+                dialog.Filter = "Mud配置|*.mudcfg|所有文件|*.*";
+                if (dialog.ShowDialog() == true)
+                {
+                    string data = JsonConvert.SerializeObject(dlg.mudCfg);
+                    File.WriteAllText(dialog.FileName, data);
+                }
+            }
+        }
+
+        private void MnuEditCfgClick(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "Mud配置|*.mudcfg|所有文件|*.*";
+            if (dialog.ShowDialog() == true)
+            {
+                MudCfg cfg = new MudCfg();
+                if (LoadMudCfg(dialog.FileName, ref cfg))
+                {
+                    MudCfgBaseEditDlg dlg = new MudCfgBaseEditDlg(cfg, dialog.FileName);
+                    if (dlg.ShowDialog() == true)
+                    {
+                        string data = JsonConvert.SerializeObject(dlg.mudCfg);
+                        File.WriteAllText(dialog.FileName, data);
+                    }
+                }
+            }
+        }
         private void MnuConnectClick(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filter = "Mud配置|*.mudcfg|所有文件|*.*";
             if(dialog.ShowDialog() == true)
             {
-                if (LoadMudCfg(dialog.FileName))
+                if (LoadMudCfg(dialog.FileName, ref mudCfg))
                 {
                     CloseSocket();
                     OpenConnection(mudCfg);
@@ -464,6 +492,5 @@ namespace TecPlusPlus
         {
 
         }
-
     }
 }

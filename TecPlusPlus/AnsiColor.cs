@@ -43,7 +43,7 @@ namespace TecPlusPlus
             { "[1;35m", new AnsiColor(EnumGround.Forground, Colors.Magenta) },
             { "[1;36m", new AnsiColor(EnumGround.Forground, Colors.Cyan) },
             { "[1;37m", new AnsiColor(EnumGround.Forground, Colors.White) },
-            { "[41;1m", new AnsiColor(EnumGround.Background, Colors.White) },
+            { "[41;1m", new AnsiColor(EnumGround.Background, Colors.Red) },
             { "[42;1m", new AnsiColor(EnumGround.Background, Colors.Green) },
             { "[43;1m", new AnsiColor(EnumGround.Background, Colors.Yellow) },
             { "[44;1m", new AnsiColor(EnumGround.Background, Colors.Blue) },
@@ -58,8 +58,10 @@ namespace TecPlusPlus
             { "[45m", new AnsiColor(EnumGround.Background, Colors.DarkMagenta) },
             { "[46m", new AnsiColor(EnumGround.Background, Colors.DarkCyan) },
             { "[47m", new AnsiColor(EnumGround.Background, Colors.GhostWhite) },
-            { "[2;37;0m", new AnsiColor(EnumGround.Background, Colors.White) },
-            
+            { "[2;37;0m", new AnsiColor(EnumGround.Forground, Colors.White) },
+            { "[256D", new AnsiColor(EnumGround.Forground, Colors.White) },
+            { "[K", new AnsiColor(EnumGround.Forground, Colors.White) },
+
         };
 
         public static int Parse(string text, ref AnsiColor c)
